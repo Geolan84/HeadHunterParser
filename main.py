@@ -21,6 +21,7 @@ def get_links(text):
         return
     print(page_count)
     for page in range(page_count):
+        print(page+1)
         try:
             data = requests.get(
             url = f"https://hh.ru/search/vacancy?text={text}&from=suggest_post&fromSearchLine=true&area=1&page={page}",
@@ -39,7 +40,7 @@ def get_company(link, parsed_data):
     
     pass
 
-def get_resume(link, parsed_data):
+def get_vacancy(link, parsed_data):
     data = requests.get(
         url = link,
         headers={"user-agent":ua.random}
@@ -64,17 +65,23 @@ def get_resume(link, parsed_data):
     except:
         parsed_data["mode"] = ""
     try:
+        parsed_data["location"] = soup.find("p", attrs={"data-qa":"vacancy-view-location"}).text
+    except:
+        try:
+            parsed_data["location"] = soup.find("span", attrs={"data-qa":"vacancy-view-raw-address"}).text
+        except:
+            parsed_data["location"] = ""
+    try:
         parsed_data["skills"] = " ".join([value.text for value in soup.find_all("div", attrs={"class":"bloko-tag bloko-tag_inline", "data-qa":"bloko-tag bloko-tag_inline skills-element"})])
     except:
         parsed_data["skills"] = ""
-    return parsed_data
 
 if __name__ == "__main__":
     workbook = xlsxwriter.Workbook('headhunter.xlsx')
     worksheet = workbook.add_worksheet()
     row = 0
     column = 0
-    for item in ["Ссылка", "Название", "Зарплата", "Опыт", "Режим работы", "Навыки"]:
+    for item in ["Ссылка", "Название", "Зарплата", "Опыт", "Режим работы", "Локация", "Навыки"]:
         worksheet.write(row, column, item)
         column += 1
     for link in get_links("python"):
@@ -82,7 +89,7 @@ if __name__ == "__main__":
         column = 0
         vacancy = {}
         vacancy["link"] = link
-        get_resume(link, vacancy)
+        get_vacancy(link, vacancy)
         for value in vacancy.values():
             worksheet.write(row, column, value)
             column += 1
