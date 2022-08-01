@@ -5,11 +5,13 @@ import time
 import xlsxwriter
 
 #https://hh.ru/search/vacancy?search_field=name&search_field=company_name&search_field=description&specialization=1&text=&page=1&hhtmFrom=vacancy_search_list
+
 ua = fake_useragent.UserAgent()
 
 def get_links(text):
     data = requests.get(
-        url = f"https://hh.ru/search/vacancy?text={text}&from=suggest_post&fromSearchLine=true&area=1&page=1",
+        #url = f"https://hh.ru/search/vacancy?text={text}&from=suggest_post&fromSearchLine=true&area=1&page=1",
+        url = "https://hh.ru/search/vacancy?search_field=name&search_field=company_name&search_field=description&specialization=1&text=&page=1",
         headers={"user-agent":ua.random}
     )
     if data.status_code != 200:
@@ -17,7 +19,7 @@ def get_links(text):
     soup = BeautifulSoup(data.content, "lxml")
     try:
         #page_count = int(soup.find("div",attrs={"class":"pager"}).find_all("span",recursive=False)[-1].find("a").find("span").text)
-        page_count = 1
+        page_count = 5
     except:
         return
     print(page_count)
@@ -25,7 +27,8 @@ def get_links(text):
         print(page+1)
         try:
             data = requests.get(
-            url = f"https://hh.ru/search/vacancy?text={text}&from=suggest_post&fromSearchLine=true&area=1&page={page}",
+            #url = f"https://hh.ru/search/vacancy?text={text}&from=suggest_post&fromSearchLine=true&area=1&page={page}",
+            url = f"https://hh.ru/search/vacancy?search_field=name&search_field=company_name&search_field=description&specialization=1&text=&page={page}",
             headers={"user-agent":ua.random}
             )
             if data.status_code != 200:
@@ -35,10 +38,10 @@ def get_links(text):
                 yield f"{a.find('a').attrs['href'].split('?')[0]}"
         except Exception as e:
             print(f"{e}")
-        time.sleep(1)
+        time.sleep(0.5)
 
 def get_company(link, parsed_data):
-    print(f"GetCompany: {link}")
+    #print(f"GetCompany: {link}")
     data = requests.get(
         url = link,
         headers={"user-agent":ua.random}
@@ -53,7 +56,7 @@ def get_company(link, parsed_data):
         parsed_data["industy"] = ""
 
 def get_vacancy(link, parsed_data):
-    print(f"Vacancy link: {link}")
+    #print(f"Vacancy link: {link}")
     data = requests.get(
         url = link,
         headers={"user-agent":ua.random}
@@ -105,6 +108,7 @@ if __name__ == "__main__":
         worksheet.write(row, column, item)
         column += 1
     for link in get_links("python"):
+        print(row)
         row += 1
         column = 0
         vacancy = {}
