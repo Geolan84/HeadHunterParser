@@ -72,6 +72,10 @@ def get_vacancy(link, parsed_data):
         except:
             parsed_data["location"] = ""
     try:
+        parsed_data["company"] = soup.find("span", attrs={"class":"vacancy-company-name"}).text
+    except:
+        parsed_data["company"] = ""
+    try:
         parsed_data["skills"] = " ".join([value.text for value in soup.find_all("div", attrs={"class":"bloko-tag bloko-tag_inline", "data-qa":"bloko-tag bloko-tag_inline skills-element"})])
     except:
         parsed_data["skills"] = ""
@@ -81,7 +85,7 @@ if __name__ == "__main__":
     worksheet = workbook.add_worksheet()
     row = 0
     column = 0
-    for item in ["Ссылка", "Название", "Зарплата", "Опыт", "Режим работы", "Локация", "Навыки"]:
+    for item in ["Ссылка", "Название", "Зарплата", "Опыт", "Режим работы", "Локация", "Компания", "Навыки"]:
         worksheet.write(row, column, item)
         column += 1
     for link in get_links("python"):
